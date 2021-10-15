@@ -5,6 +5,7 @@ const multer = require("multer");
 // const keys = require("../config/keys");
 const filesdb = require('../model/files');
 var userdb = require('../model/user');
+// const session = require('express-session');
 
 
 const storage = multer.memoryStorage();
@@ -174,7 +175,10 @@ exports.login = (req, res) => {
                 alert(`cannot find the user with email:${inputEmail}`);
             }else{
                 if(data.password==req.body.password){
-                    res.redirect('/dashboard');    
+                    // using session which we added as middlewear in server.js here . we use tis session to pass username to ejs file dashboard.ejs
+                    req.session.user = data.name;
+                    // console.log(req.session.user);
+                    res.render('dashboard',{userName:req.session.user} );    
                 }else{
                     res.status(404).send({ message: `incorrect Password for user :${inputEmail}` });
                 }
