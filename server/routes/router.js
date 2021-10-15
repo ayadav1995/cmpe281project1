@@ -26,13 +26,14 @@ route.get('/', rederServices.homeRoutes );
 // @method GET/add-user
 route.get('/add-user-route', rederServices.addUser );
 
-
 route.get('/dashboard',rederServices.dashboard);
 
 
 route.post('/upload',controller.upload);
 
 //api methods dealing with database
+
+route.post('/login',controller.login);
 
 route.post('/api/users', controller.create);
 

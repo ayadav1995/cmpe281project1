@@ -7,6 +7,6 @@ exports.addUser=(req,res) =>{
 }
 
 exports.dashboard=(req,res) =>{
-    console.log(req);
+    // console.log(req);
     res.render('dashboard');
 }
