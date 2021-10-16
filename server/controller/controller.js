@@ -53,8 +53,8 @@ exports.upload = (req, res) => {
         console.log("INSIDE UPLOAD FUNCTION");
         // console.log(req);
         console.log(req.file);
-        console.log(req.image);
-        console.log(req.body.image);
+        // console.log(req.image);
+        // console.log(req.body.image);
         const moment = require('moment');
         //File Upload started
         var startDate = new Date();
@@ -95,7 +95,7 @@ exports.upload = (req, res) => {
                 } else {
                     //success
                     // req.flash('success_msg','File Uploaded!');
-                    res.redirect('/dashboard');
+                    // res.render('dashboard', { userName: req.session.user });
                     //res.send(data.Location);
 
 
@@ -107,28 +107,62 @@ exports.upload = (req, res) => {
                     // want to the fields in the schema 
                     const newFile = new filesdb({
                         //   user : uname,
-                        user: 'hardcoded',
+                        user: req.session.user,
                         //   email : uemail,
-                        email: 'hardcoded@xyz.com',
+                        email: req.session.email,
                         fileUrl: data.Location,
                         fileName: file.originalname,
                         fileDesc: file.originalname,
                         uploadTime: ((endDate - startDate) / 1000),
                         modifiedDate: ((endDate - startDate) / 1000)
                     });
-                    //check if already exisits
-                    filesdb.findOne({ fileName: file.originalname })
-                        .then((fileName) => {
+                    // check if already exisits
+                    // var fileAlreadyExists = false;
+                    // filesdb.findOne({ fileName: file.originalname })
+                    //     .then((fileName) => {
+                    //         if (fileName) {
+                    //             fileAlreadyExists = true;
+                    //             newFile.save()
+                    //                 .then(file => {
+                    //                     console.log('File Updated');
+                    //                     res.render('dashboard', { userName: req.session.user });
+                    //                 })
+                    //                 .catch(err => console.log(err));
+                    //         }
+                    //     });
 
-                            newFile.save()
-                                .then(file => {
-                                    console.log('File Uploaded');
-                                })
-                                .catch(err => console.log(err));
-                        });
 
-                }
-            });
+                    //   if(!fileAlreadyExists){
+                    //     console.log('New File Uploaded');
+                    //     res.render('dashboard', { userName: req.session.user });
+                    //   }
+
+                    // filesdb.findOneAndReplace(
+                    //     { fileName: file.originalname }, {newFile},
+                    //     { upsert: true, returnNewDocument: true }
+                    // ).then(fileName => {
+                    //     console.log('File Uploaded');
+                    //     res.render('dashboard', { userName: req.session.user });
+                    // }).catch(err => console.log(err));
+
+                    filesdb.findOneAndReplace(
+                        { "fileName": file.originalname }, 
+                        {"user": req.session.user ,"email": req.session.email,
+                        "fileUrl": data.Location,
+                        "fileName": file.originalname,
+                        "fileDesc": file.originalname,
+                        "uploadTime": ((endDate - startDate) / 1000),
+                        "modifiedDate": ((endDate - startDate) / 1000) },
+                        { upsert: true, returnNewDocument: true }
+                    ).then(fileName => {
+                        console.log('File Uploaded');
+                        res.render('dashboard', { userName: req.session.user });
+                    }).catch(err => console.log(err));
+
+
+
+                    }
+                });
 
         }
 
@@ -161,29 +195,31 @@ exports.login = (req, res) => {
 
 
     const inputEmail = req.body.email;
-    console.log('THIS IS DATA BEFORE CALLBACK '+ userdb.findOne({email:inputEmail}));
-
+    console.log('THIS IS DATA BEFORE CALLBACK ' + userdb.findOne({ email: inputEmail }));
+    // Checking if user in database exists with the given email 
     // findOne is the method for finding a particular field from the database in mongodb, we cannot use find here- doenst do validation
-    userdb.findOne({email:inputEmail})
-           .then(data => {
+    userdb.findOne({ email: inputEmail })
+        .then(data => {
             //    console.log(inputEmail);
             console.log("inside find method");
-            console.log('THIS IS DATA After CALLBACK '+data);
+            console.log('THIS IS DATA After CALLBACK ' + data);
             if (!data) {
                 // res.status(404).send({ message: `cannot find the user with email:${inputEmail}` });
                 res.status(404);
                 alert(`cannot find the user with email:${inputEmail}`);
-            }else{
-                if(data.password==req.body.password){
+            } else {
+                if (data.password == req.body.password) {
                     // using session which we added as middlewear in server.js here . we use tis session to pass username to ejs file dashboard.ejs
+                    console.log(req.session.user);
                     req.session.user = data.name;
-                    // console.log(req.session.user);
-                    res.render('dashboard',{userName:req.session.user} );    
-                }else{
+                    req.session.email = data.email;
+                    console.log(req.session.user);
+                    res.render('dashboard', { userName: req.session.user });
+                } else {
                     res.status(404).send({ message: `incorrect Password for user :${inputEmail}` });
                 }
 
-                
+
             }
         })
 }
