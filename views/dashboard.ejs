@@ -30,10 +30,11 @@
 
             </thead>
             <tbody>
+                <% filesToDisplay.forEach( function (files { %>
              <tr>
-                <td>sample.png</td>
-                <td>10/05/2021</td>
-                <td>10Mb</td>
+                <td><%= files.fileName %></td>
+                <td><%= files.fileUrl %></td>
+                <td><%= files.modifiedDate %></td>
                 <td> <a href="#" class="btn border-shadow update">
                     <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
                 </a></td>
@@ -44,7 +45,7 @@
                     <span class="text-gradient"><i class="fas fa-download"></i></span>
                 </a></td>
              </tr>
-
+             <%  }) %>
             </tbody>
         </table>
         <div class="form-group">

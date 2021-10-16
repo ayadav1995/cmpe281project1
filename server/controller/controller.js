@@ -145,6 +145,8 @@ exports.upload = (req, res) => {
                     //     res.render('dashboard', { userName: req.session.user });
                     // }).catch(err => console.log(err));
 
+
+                    // the findOneAndReplace function with upsert:true is used to replace file if it exists or else add new file
                     filesdb.findOneAndReplace(
                         { "fileName": file.originalname }, 
                         {"user": req.session.user ,"email": req.session.email,
@@ -209,12 +211,31 @@ exports.login = (req, res) => {
                 alert(`cannot find the user with email:${inputEmail}`);
             } else {
                 if (data.password == req.body.password) {
-                    // using session which we added as middlewear in server.js here . we use tis session to pass username to ejs file dashboard.ejs
+                    // using session which we added as middlewear in server.js here . we use this session to pass username to ejs file dashboard.ejs
                     console.log(req.session.user);
                     req.session.user = data.name;
                     req.session.email = data.email;
                     console.log(req.session.user);
-                    res.render('dashboard', { userName: req.session.user });
+
+                    var userEmail = data.email;
+                    console.log(userEmail);
+                    // gettting list of the files uploaded by the user
+                    filesdb.findById({email:userEmail}).then(
+                        filesList=>{
+                            if(!filesList){
+                                console.log("No files found for the user");
+                            }else{
+                                req.session.files = filesList.name;
+                                console.log(filesList);
+                            }
+                        }
+                    ).catch(err => {
+                        res.status(500).send({
+                            message: err.message || "Error encountered when fetching all files for the user"
+                        })
+                    })
+                        
+                    res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
                 } else {
                     res.status(404).send({ message: `incorrect Password for user :${inputEmail}` });
                 }
