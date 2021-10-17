@@ -20,11 +20,12 @@ exports.create = (req, res) => {
         return;
     }
 
-    if (req.body.email = '') {
+    if (req.body.email == '') {
         res.status('400').send({ message: "Request body cannot be empty" })
         return;
     }
 
+    console.log(req.body);
     // using the user schema we created in module/user.js file for creating a new user in the database
     const user = new userdb({
         name: req.body.name,
@@ -33,16 +34,17 @@ exports.create = (req, res) => {
 
     })
 
+    
+
     user.save('user').then(data => {
-        res.send(data);
-        // res.redirect('./index');
+        // res.send(data);
+        console.log("User created with details" + data);
+        res.redirect('/');
     }).catch(err => {
         res.status(500).send({
             message: err.message || "Error encountered when creating new user"
         })
     })
-
-
 }
 
 
@@ -197,7 +199,41 @@ exports.login = (req, res) => {
 
 
     const inputEmail = req.body.email;
-    console.log('THIS IS DATA BEFORE CALLBACK ' + userdb.findOne({ email: inputEmail }));
+    // console.log('THIS IS DATA BEFORE CALLBACK ' + userdb.findOne({ email: inputEmail }));
+    
+
+    if(req.body.email=='admin@gmail.com'){
+            console.log("inside admin function");
+
+            var userList='';
+            var filesList='';
+            // req.session.user = req.body.email;
+            req.session.user = "Admin";
+
+            userdb.find().then(users => {
+                userList = users;
+            }).catch(err => {
+                res.status(500).send({
+                    message: err.message || "Error encountered when fetching all users"
+                })
+            })
+
+            filesdb.find().then(files => {
+                filesList = files;
+                req.session.files = filesList;
+
+                res.render('adminView', { userName: req.session.user, filesToDisplay:req.session.files , UsersToDisplay:userList });
+
+            }).catch(err => {
+                res.status(500).send({
+                    message: err.message || "Error encountered when fetching all users"
+                })
+            })
+
+
+
+
+    }else{
     // Checking if user in database exists with the given email 
     // findOne is the method for finding a particular field from the database in mongodb, we cannot use find here- doenst do validation
     userdb.findOne({ email: inputEmail })
@@ -250,6 +286,8 @@ exports.login = (req, res) => {
 
             }
         })
+    }
+    
 }
 
 

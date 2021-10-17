@@ -13,6 +13,58 @@
                 </div>
            </div>
     <div class="container">
+
+        <form action="" method="" id=add_user enctype="multipart/form-data" >
+            
+            <!-- adding code for viewin users and their files -->
+            <table class="table">
+                <thead class ="thead-dark">
+                    <tr>
+                        <th>UserName</th>
+                        <th>Email</th>
+                        <!-- <th>update</th>
+                        <th>delete</th>
+                        <th>Download link</th> -->
+                    </tr>
+    
+                </thead>
+                <tbody>
+                    <% UsersToDisplay.forEach(function(users){ %>
+                 <tr>
+                    <!-- <input type="text" name="test2" id=""></input> -->
+                    <!-- <hidden name="fileName" value=''> -->
+                    <td ><%= users.name %></td>
+                    <td ><%= users.email %></td>
+                    <!-- <td><%= files.user ></td>
+                    <td><%= files.email ></td> -->
+                    <!-- <td><%= files.modifiedDate %></td> -->
+                    <!-- <td> <a href="updateFile" class="btn border-shadow update">
+                        <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
+                    </a></td> -->
+                    <td>
+                        <div class="form-group">
+                        <input type="file" name="image" value="" placeholder=""></input>
+                        <!-- <button type="submit" formaction="/update" class="btn update">
+                            <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
+                        </button> -->
+                    </div>
+                    </td>
+                    <!-- <td> 
+                        <button type="submit"  class="btn update" name=<%= files.fileUrl %> >
+                        <span class="text-gradient"><i class="fas fa-times"></i></span>
+                        </button>
+                    </td> -->
+                    <!-- <td> <a href="/delete?url=<%= files.fileUrl %>" class="btn border-shadow update">
+                        <span class="text-gradient"><i class="fas fa-times"></i></span>
+                    </a></td>
+                    <td> <a href="<%= files.fileUrl %>" download=""class="btn border-shadow update">
+                        <span class="text-gradient"><i class="fas fa-download"></i></span>
+                    </a></td> -->
+                 </tr>
+                 <%  }) %>
+                    </tbody>
+                </table>
+            </form>
         
         <form action="/update" method="POST" id=add_user enctype="multipart/form-data" >
             
@@ -22,7 +74,8 @@
                 <tr>
                     <th>FileName</th>
                     <th>Link</th>
-                    <!-- <th>filesize</th> -->
+                    <th>user</th>
+                    <th>email</th>
                     <th>update</th>
                     <th>delete</th>
                     <th>Download link</th>
@@ -33,11 +86,11 @@
                 <% filesToDisplay.forEach(function(files){ %>
              <tr>
                 <!-- <input type="text" name="test2" id=""></input> -->
-                <hidden name="fileName" value=''>
-                <td ><%= files.fileName %>
-                </td>
-                <td name="fileUrll" value=''><%= files.fileUrl %>
-                </td>
+                <!-- <hidden name="fileName" value=''> -->
+                <td ><%= files.fileName %></td>
+                <td ><%= files.fileUrl %></td>
+                <td><%= files.user %></td>
+                <td><%= files.email %></td>
                 <!-- <td><%= files.modifiedDate %></td> -->
                 <!-- <td> <a href="updateFile" class="btn border-shadow update">
                     <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>

@@ -28,6 +28,8 @@ route.get('/add-user-route', rederServices.addUser );
 
 route.get('/dashboard',rederServices.dashboard);
 
+route.get('/index',rederServices.homeRoutes);
+
 
 //api methods dealing with database
 route.post('/upload',controller.upload);
