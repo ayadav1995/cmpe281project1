@@ -13,16 +13,16 @@
                 </div>
            </div>
     <div class="container">
-       
-     <!-- form handling -->
-     <form action="/upload" method="POST" id=add_user enctype="multipart/form-data" >
+        
+        <form action="/update" method="POST" id=add_user enctype="multipart/form-data" >
+            
         <!-- adding code for viewin users and their files -->
         <table class="table">
             <thead class ="thead-dark">
                 <tr>
                     <th>FileName</th>
-                    <th>uploadDate</th>
-                    <th>filesize</th>
+                    <th>Link</th>
+                    <!-- <th>filesize</th> -->
                     <th>update</th>
                     <th>delete</th>
                     <th>Download link</th>
@@ -30,15 +30,32 @@
 
             </thead>
             <tbody>
-                <% filesToDisplay.forEach( function (files { %>
+                <% filesToDisplay.forEach(function(files){ %>
              <tr>
-                <td><%= files.fileName %></td>
-                <td><%= files.fileUrl %></td>
-                <td><%= files.modifiedDate %></td>
-                <td> <a href="#" class="btn border-shadow update">
+                <!-- <input type="text" name="test2" id=""></input> -->
+                <hidden name="fileName" value=''>
+                <td ><%= files.fileName %>
+                </td>
+                <td name="fileUrll" value=''><%= files.fileUrl %>
+                </td>
+                <!-- <td><%= files.modifiedDate %></td> -->
+                <!-- <td> <a href="updateFile" class="btn border-shadow update">
                     <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
-                </a></td>
-                <td> <a href="#" class="btn border-shadow update">
+                </a></td> -->
+                <td>
+                    <div class="form-group">
+                    <input type="file" name="image" value="" placeholder=""></input>
+                    <!-- <button type="submit" formaction="/update" class="btn update">
+                        <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
+                    </button> -->
+                </div>
+                </td>
+                <!-- <td> 
+                    <button type="submit"  class="btn update" name=<%= files.fileUrl %> >
+                    <span class="text-gradient"><i class="fas fa-times"></i></span>
+                    </button>
+                </td> -->
+                <td> <a href="/delete?url=<%= files.fileUrl %>" class="btn border-shadow update">
                     <span class="text-gradient"><i class="fas fa-times"></i></span>
                 </a></td>
                 <td> <a href="#" class="btn border-shadow update">
@@ -46,8 +63,11 @@
                 </a></td>
              </tr>
              <%  }) %>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </form>
+
+        <form action="/upload" method="POST" id=add_user enctype="multipart/form-data" >
         <div class="form-group">
             <button type="submit" class="btn text-dark update">Upload New File</button>
         </div>

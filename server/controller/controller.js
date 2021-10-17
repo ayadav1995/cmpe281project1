@@ -158,7 +158,7 @@ exports.upload = (req, res) => {
                         { upsert: true, returnNewDocument: true }
                     ).then(fileName => {
                         console.log('File Uploaded');
-                        res.render('dashboard', { userName: req.session.user });
+                        res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
                     }).catch(err => console.log(err));
 
 
@@ -219,23 +219,30 @@ exports.login = (req, res) => {
 
                     var userEmail = data.email;
                     console.log(userEmail);
+                    // using this userEmail object did not work in the below filesdb.find({email:req.body.email})
+
                     // gettting list of the files uploaded by the user
-                    filesdb.findById({email:userEmail}).then(
+                    filesdb.find({email:req.body.email}).then(
                         filesList=>{
+                            console.log("entered filesdb function");
                             if(!filesList){
                                 console.log("No files found for the user");
                             }else{
-                                req.session.files = filesList.name;
-                                console.log(filesList);
+                                req.session.files = filesList;
+                                console.log("trying to print files list after fetch from db "+filesList);
                             }
                         }
+                    ).then( render =>{
+                        console.log("about to render dashboard with files: "+req.session.files);
+                        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+                    }
+                       
                     ).catch(err => {
                         res.status(500).send({
                             message: err.message || "Error encountered when fetching all files for the user"
                         })
                     })
                         
-                    res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
                 } else {
                     res.status(404).send({ message: `incorrect Password for user :${inputEmail}` });
                 }
@@ -251,20 +258,30 @@ exports.login = (req, res) => {
 //to update a user
 exports.update = (req, res) => {
 
+    // console.log(req);
+    console.log(req.session.user);
+
+ 
     if (!req.body) {
         res.status('400').send({ message: "Request body cannot be empty" })
         return;
     }
 
-    const id = req.params.id;
-    userdb.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-        .then(data => {
-            if (!data) {
-                res.status(404).send({ message: `cannot update the user with ID` });
-            }
-        }
+    console.log("inside update func");
+    console.log(req.file);
+    console.log(req.body.test);
+    console.log(req.body.fileUrl);
+    // console.log(req.body.file);
 
-        )
+    // const id = req.params.id;
+    // userdb.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    //     .then(data => {
+    //         if (!data) {
+    //             res.status(404).send({ message: `cannot update the user with ID` });
+    //         }
+    //     }
+
+    //     )
 
 }
 
@@ -280,6 +297,46 @@ exports.update = (req, res) => {
 
 //to delete a user
 exports.delete = (req, res) => {
+    console.log("inside delete function");
+    console.log(req.query.url);
+    console.log(req.session);
+
+    var fileUrl = req.query.url;
+    // console.log(req.file);
+    // console.log(req.body.fileUrl);
+    // console.log(req.body.test);
+    // console.log(req.body.fileName);
+    // console.log(req.body.test2);
+
+    filesdb.remove({fileUrl:req.query.url}).then(
+        // waiting for 2 seconds before fetching new fileslist, didnt work here probably because we need to define a func inside then
+        // await new Promise(resolve => setTimeout(resolve, 5000));
+
+        filesdb.find({email:req.session.email}).then(
+            // have to make this function async in order to use await in the below func
+        async filesList=>{
+            // waits for 3 seconds before fetching new list of files for the user
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            console.log("entered filesdb function");
+            if(!filesList){
+                console.log("No files found for the user");
+            }else{
+                req.session.files = filesList;
+                console.log("trying to print files list after fetch from db "+filesList);
+            }
+        }
+    ).then( render =>{
+        console.log("about to render dashboard with files: "+req.session.files);
+        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+    }
+       
+    )).catch(err => {
+        res.status(500).send({
+            message: err.message || "Error encountered when fetching all files for the user"
+        })
+    })
+
+
 
 }
 
