@@ -222,7 +222,7 @@ exports.login = (req, res) => {
                 filesList = files;
                 req.session.files = filesList;
 
-                res.render('adminView', { userName: req.session.user, filesToDisplay:req.session.files , UsersToDisplay:userList });
+                res.render('adminView', { userName: req.session.user, filesToDisplay:req.session.files , usersToDisplay:userList });
 
             }).catch(err => {
                 res.status(500).send({

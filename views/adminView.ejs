@@ -29,37 +29,10 @@
     
                 </thead>
                 <tbody>
-                    <% UsersToDisplay.forEach(function(users){ %>
+                    <% usersToDisplay.forEach(function(users){ %>
                  <tr>
-                    <!-- <input type="text" name="test2" id=""></input> -->
-                    <!-- <hidden name="fileName" value=''> -->
                     <td ><%= users.name %></td>
                     <td ><%= users.email %></td>
-                    <!-- <td><%= files.user ></td>
-                    <td><%= files.email ></td> -->
-                    <!-- <td><%= files.modifiedDate %></td> -->
-                    <!-- <td> <a href="updateFile" class="btn border-shadow update">
-                        <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
-                    </a></td> -->
-                    <td>
-                        <div class="form-group">
-                        <input type="file" name="image" value="" placeholder=""></input>
-                        <!-- <button type="submit" formaction="/update" class="btn update">
-                            <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
-                        </button> -->
-                    </div>
-                    </td>
-                    <!-- <td> 
-                        <button type="submit"  class="btn update" name=<%= files.fileUrl %> >
-                        <span class="text-gradient"><i class="fas fa-times"></i></span>
-                        </button>
-                    </td> -->
-                    <!-- <td> <a href="/delete?url=<%= files.fileUrl %>" class="btn border-shadow update">
-                        <span class="text-gradient"><i class="fas fa-times"></i></span>
-                    </a></td>
-                    <td> <a href="<%= files.fileUrl %>" download=""class="btn border-shadow update">
-                        <span class="text-gradient"><i class="fas fa-download"></i></span>
-                    </a></td> -->
                  </tr>
                  <%  }) %>
                     </tbody>
@@ -76,7 +49,7 @@
                     <th>Link</th>
                     <th>user</th>
                     <th>email</th>
-                    <th>update</th>
+                    <!-- <th>update</th> -->
                     <th>delete</th>
                     <th>Download link</th>
                 </tr>
@@ -91,23 +64,11 @@
                 <td ><%= files.fileUrl %></td>
                 <td><%= files.user %></td>
                 <td><%= files.email %></td>
-                <!-- <td><%= files.modifiedDate %></td> -->
-                <!-- <td> <a href="updateFile" class="btn border-shadow update">
-                    <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
-                </a></td> -->
-                <td>
+                <!-- <td>
                     <div class="form-group">
                     <input type="file" name="image" value="" placeholder=""></input>
-                    <!-- <button type="submit" formaction="/update" class="btn update">
-                        <span class="text-gradient"><i class="fas fa-pencil-alt"></i></span>
-                    </button> -->
-                </div>
+                </div> -->
                 </td>
-                <!-- <td> 
-                    <button type="submit"  class="btn update" name=<%= files.fileUrl %> >
-                    <span class="text-gradient"><i class="fas fa-times"></i></span>
-                    </button>
-                </td> -->
                 <td> <a href="/delete?url=<%= files.fileUrl %>" class="btn border-shadow update">
                     <span class="text-gradient"><i class="fas fa-times"></i></span>
                 </a></td>
