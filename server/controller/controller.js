@@ -12,7 +12,44 @@ const storage = multer.memoryStorage();
 const multerObject = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 } }).single('image');
 
 
-//to create a new user
+
+//MongoDB method to create a new user
+// exports.create = (req, res) => {
+
+//     if (!req.body) {
+//         res.status('400').send({ message: "Request body cannot be empty" })
+//         return;
+//     }
+
+//     if (req.body.email == '') {
+//         res.status('400').send({ message: "Request body cannot be empty" })
+//         return;
+//     }
+
+//     console.log(req.body);
+//     // using the user schema we created in module/user.js file for creating a new user in the database
+//     const user = new userdb({
+//         name: req.body.name,
+//         email: req.body.email,
+//         password: req.body.password
+
+//     })
+//     user.save('user').then(data => {
+//         // res.send(data);
+//         console.log("User created with details" + data);
+//         res.redirect('/');
+//     }).catch(err => {
+//         res.status(500).send({
+//             message: err.message || "Error encountered when creating new user"
+//         })
+//     })
+// }
+
+    
+
+
+   
+// DynamoDb method to create new user
 exports.create = (req, res) => {
 
     if (!req.body) {
@@ -26,28 +63,135 @@ exports.create = (req, res) => {
     }
 
     console.log(req.body);
-    // using the user schema we created in module/user.js file for creating a new user in the database
-    const user = new userdb({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password
 
-    })
+    AWS.config.update({
+        "region": process.env.region,
+        "endpoint":process.env.DynamoDb_URI,
+        "accessKeyId": process.env.AwsAccessKeyId,
+        "secretAccessKey": process.env.AwsSecretAccessKey,
+    });
 
-    
+    // implementing dynamodb
+    var docClient = new AWS.DynamoDB.DocumentClient();
 
-    user.save('user').then(data => {
-        // res.send(data);
-        console.log("User created with details" + data);
-        res.redirect('/');
-    }).catch(err => {
-        res.status(500).send({
-            message: err.message || "Error encountered when creating new user"
-        })
-    })
+    var params = {
+        TableName: "users",
+        Item: {
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password
+        }
+    }
+
+    docClient.put(params, function(err, data) {
+        if (err) {
+            console.error("Unable to add user", req.body.email, ". Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("PutItem succeeded:", req.body.email);
+            res.redirect('/');
+        }
+     });
 }
 
 
+// exports.upload = (req, res) => {
+
+//     multerObject(req, res, (err) => {
+
+//         console.log("INSIDE UPLOAD FUNCTION");
+//         // console.log(req);
+//         console.log(req.file);
+//         // console.log(req.image);
+//         // console.log(req.body.image);
+//         const moment = require('moment');
+//         //File Upload started
+//         var startDate = new Date();
+
+//         // const uemail = req.user.email;
+//         // const uname = req.user.name;
+
+//         const file = req.file;
+
+
+//         if (!file) {
+//             //   req.flash('error_msg','Please select a file');
+//             res.redirect('/dashboard');
+//         }
+//         else {
+
+//             const s3FileURL = process.env.s3Url;
+
+//             let s3bucket = new AWS.S3({
+//                 accessKeyId: process.env.AwsAccessKeyId,
+//                 secretAccessKey: process.env.AwsSecretAccessKey,
+//                 region: process.env.region
+//             });
+
+//             //Location of store for file upload
+
+//             var params = {
+//                 Bucket: process.env.bucketName,
+//                 Key: file.fieldname + ('-') + Date.now(),
+//                 Body: file.buffer,
+//                 ContentType: file.mimetype,
+//                 ACL: "public-read"
+//             };
+
+//             s3bucket.upload(params, function (err, data) {
+//                 if (err) {
+//                     res.status(500).json({ error: true, Message: err });
+//                 } else {
+//                     //success
+//                     // req.flash('success_msg','File Uploaded!');
+//                     // res.render('dashboard', { userName: req.session.user });
+//                     //res.send(data.Location);
+
+
+//                     //File Upload ended       
+//                     var endDate = new Date();
+
+
+//                     // creating an object to be stored in the nosql database, we create an object and pass the values we 
+//                     // want to the fields in the schema 
+//                     const newFile = new filesdb({
+//                         //   user : uname,
+//                         user: req.session.user,
+//                         //   email : uemail,
+//                         email: req.session.email,
+//                         fileUrl: data.Location,
+//                         fileName: file.originalname,
+//                         fileDesc: file.originalname,
+//                         uploadTime: ((endDate - startDate) / 1000),
+//                         modifiedDate: ((endDate - startDate) / 1000)
+//                     });
+                   
+//                     // the findOneAndReplace function with upsert:true is used to replace file if it exists or else add new file
+//                     filesdb.findOneAndReplace(
+//                         { "fileName": file.originalname }, 
+//                         {"user": req.session.user ,"email": req.session.email,
+//                         "fileUrl": data.Location,
+//                         "fileName": file.originalname,
+//                         "fileDesc": file.originalname,
+//                         "uploadTime": ((endDate - startDate) / 1000),
+//                         "modifiedDate": ((endDate - startDate) / 1000) },
+//                         { upsert: true, returnNewDocument: true }
+//                     ).then(fileName => {
+//                         console.log('File Uploaded');
+//                         res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
+//                     }).catch(err => console.log(err));
+
+
+
+//                     }
+//                 });
+
+//         }
+
+//     });
+
+// }
+
+// DynamoDb method for upload functionality
 exports.upload = (req, res) => {
 
     multerObject(req, res, (err) => {
@@ -95,84 +239,56 @@ exports.upload = (req, res) => {
                 if (err) {
                     res.status(500).json({ error: true, Message: err });
                 } else {
-                    //success
-                    // req.flash('success_msg','File Uploaded!');
-                    // res.render('dashboard', { userName: req.session.user });
-                    //res.send(data.Location);
 
-
-                    //File Upload ended       
+                    console.log("file upload successful");
                     var endDate = new Date();
 
-
-                    // creating an object to be stored in the nosql database, we create an object and pass the values we 
-                    // want to the fields in the schema 
-                    const newFile = new filesdb({
-                        //   user : uname,
+                    console.log("after s3 upload function");
+                    AWS.config.update({
+                        "region": process.env.region,
+                        "endpoint":process.env.DynamoDb_URI,
+                        "accessKeyId": process.env.AwsAccessKeyId,
+                        "secretAccessKey": process.env.AwsSecretAccessKey,
+                    });
+                
+                    // implementing dynamodb
+                    var docClient = new AWS.DynamoDB.DocumentClient();
+                
+                    var params = {
+                        TableName: "files",
+                        Item: {
                         user: req.session.user,
-                        //   email : uemail,
                         email: req.session.email,
                         fileUrl: data.Location,
                         fileName: file.originalname,
                         fileDesc: file.originalname,
                         uploadTime: ((endDate - startDate) / 1000),
                         modifiedDate: ((endDate - startDate) / 1000)
-                    });
-                    // check if already exisits
-                    // var fileAlreadyExists = false;
-                    // filesdb.findOne({ fileName: file.originalname })
-                    //     .then((fileName) => {
-                    //         if (fileName) {
-                    //             fileAlreadyExists = true;
-                    //             newFile.save()
-                    //                 .then(file => {
-                    //                     console.log('File Updated');
-                    //                     res.render('dashboard', { userName: req.session.user });
-                    //                 })
-                    //                 .catch(err => console.log(err));
-                    //         }
-                    //     });
+                        }
+                    }
+                
+                    docClient.put(params, function(err, data2) {
+                        if (err) {
+                            console.error("Unable to add user", data.Location, ". Error JSON:", JSON.stringify(err, null, 2));
+                        } else {
+                            console.log("PutItem succeeded:", data.Location);
+                            
+                        }
+                     })
 
-
-                    //   if(!fileAlreadyExists){
-                    //     console.log('New File Uploaded');
-                    //     res.render('dashboard', { userName: req.session.user });
-                    //   }
-
-                    // filesdb.findOneAndReplace(
-                    //     { fileName: file.originalname }, {newFile},
-                    //     { upsert: true, returnNewDocument: true }
-                    // ).then(fileName => {
-                    //     console.log('File Uploaded');
-                    //     res.render('dashboard', { userName: req.session.user });
-                    // }).catch(err => console.log(err));
-
-
-                    // the findOneAndReplace function with upsert:true is used to replace file if it exists or else add new file
-                    filesdb.findOneAndReplace(
-                        { "fileName": file.originalname }, 
-                        {"user": req.session.user ,"email": req.session.email,
-                        "fileUrl": data.Location,
-                        "fileName": file.originalname,
-                        "fileDesc": file.originalname,
-                        "uploadTime": ((endDate - startDate) / 1000),
-                        "modifiedDate": ((endDate - startDate) / 1000) },
-                        { upsert: true, returnNewDocument: true }
-                    ).then(fileName => {
                         console.log('File Uploaded');
                         res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
-                    }).catch(err => console.log(err));
-
-
+                   
 
                     }
-                });
+                })
 
         }
 
-    });
+    })
 
 }
+
 
 //to find all users 
 exports.find = (req, res) => {
