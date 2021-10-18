@@ -307,7 +307,7 @@ exports.find = (req, res) => {
 
 
 // DynamoDb login method
-exports.login = (req, res) => {
+ exports.login = async (req, res) => {
 
     console.log("inside login method");
     if (!req.body) {
@@ -345,42 +345,35 @@ exports.login = (req, res) => {
             var userList = '';
             var filesList = '';
 
-            docClient.scan(params, (err,data2)=>{
+           await docClient.scan(params, (err,data2)=>{
                 if (err) {
                     console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
                 } else {
                     console.log("GetItem succeeded:", JSON.stringify(data2, null, 2));
-                    userList=data2;
-                    req.session.users=data2;
-                    // console.log(data);
+                    userList=data2.Items;
+                    req.session.users=data2.Items;
+                    
                 }
             })
-
-            
-
-            // console.log(userList);
 
             var params2 = {
                 TableName : "files"
             }
 
-            docClient.scan(params, (err,data)=>{
+            await docClient.scan(params2, (err,data)=>{
                 if (err) {
                     console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
                 } else {
                     console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
-                    userList=data;
-                    req.session.files=data;
+                    filesList=data.Items;
+                    req.session.files=data.Items;
                     // console.log(data);
+                    console.log(req.session.files);
+                    console.log(req.session.users);
                     res.render('adminView', { userName: req.session.user, filesToDisplay:req.session.files , usersToDisplay:req.session.users });
                 }
             })
            
-            console.log(req.session.files);
-            console.log(req.session.users);
-
-           
-
             // userdb.find().then(users => {
             //     userList = users;
             // }).catch(err => {
