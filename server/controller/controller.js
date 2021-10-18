@@ -93,8 +93,6 @@ exports.create = (req, res) => {
      });
 }
 
-
-
 // DynamoDb method for upload functionality
 exports.upload = (req, res) => {
 
@@ -121,8 +119,6 @@ exports.upload = (req, res) => {
         }
         else {
 
-            const s3FileURL = process.env.s3Url;
-
             let s3bucket = new AWS.S3({
                 accessKeyId: process.env.AwsAccessKeyId,
                 secretAccessKey: process.env.AwsSecretAccessKey,
@@ -139,24 +135,32 @@ exports.upload = (req, res) => {
                 ACL: "public-read"
             };
 
-            s3bucket.upload(params, function (err, data) {
+            s3bucket.upload(params, async function (err, data) {
                 if (err) {
                     res.status(500).json({ error: true, Message: err });
                 } else {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
 
                     console.log("file upload successful");
                     var endDate = new Date();
 
                     console.log("after s3 upload function");
-                    AWS.config.update({
-                        "region": process.env.region,
-                        "endpoint":process.env.DynamoDb_URI,
-                        "accessKeyId": process.env.AwsAccessKeyId,
-                        "secretAccessKey": process.env.AwsSecretAccessKey,
-                    });
+
+                    
+                    // AWS.config.update({
+                    //     "region": process.env.region,
+                    //     "endpoint":process.env.DynamoDb_URI,
+                    //     "accessKeyId": process.env.AwsAccessKeyId,
+                    //     "secretAccessKey": process.env.AwsSecretAccessKey,
+                    // });
                 
                     // implementing dynamodb
-                    var docClient = new AWS.DynamoDB.DocumentClient();
+                    var docClient = new AWS.DynamoDB.DocumentClient({
+                        // "region": process.env.region,
+                        "endpoint":process.env.DynamoDb_URI,
+                        // "accessKeyId": process.env.AwsAccessKeyId,
+                        // "secretAccessKey": process.env.AwsSecretAccessKey
+                    });
                 
                     var params = {
                         TableName: "files",
@@ -171,17 +175,18 @@ exports.upload = (req, res) => {
                         }
                     }
                 
-                    docClient.put(params, function(err, data2) {
+                    docClient.put(params, async function(err, data2) {
                         if (err) {
                             console.error("Unable to add user", data.Location, ". Error JSON:", JSON.stringify(err, null, 2));
                         } else {
                             console.log("PutItem succeeded:", data.Location);
-                            
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            console.log('File Uploaded');
+                        res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
                         }
                      })
 
-                        console.log('File Uploaded');
-                        res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
+                        
                    
 
                     }
@@ -305,9 +310,13 @@ exports.find = (req, res) => {
     })
 }
 
-
 // DynamoDb login method
  exports.login = async (req, res) => {
+
+    req.session.user = req.body.user;
+    req.session.email = req.body.email;
+    req.session.password = req.body.password;
+
 
     console.log("inside login method");
     if (!req.body) {
@@ -316,8 +325,19 @@ exports.find = (req, res) => {
         return;
     }
 
+    AWS.config.update({
+        "region": process.env.region,
+        // "endpoint":process.env.DynamoDb_URI, -- adding this here will cause problems with s3 upload function coz it wil change bucket URL
+        "accessKeyId": process.env.AwsAccessKeyId,
+        "secretAccessKey": process.env.AwsSecretAccessKey,
+    });
 
-    const inputEmail = req.body.email;
+    // implementing dynamodb
+    var docClient = new AWS.DynamoDB.DocumentClient({
+        "endpoint":process.env.DynamoDb_URI
+    });
+
+    let inputEmail = req.body.email;
     // console.log('THIS IS DATA BEFORE CALLBACK ' + userdb.findOne({ email: inputEmail }));
     
 
@@ -328,16 +348,7 @@ exports.find = (req, res) => {
             var filesList='';
             // req.session.user = req.body.email;
             req.session.user = "Admin";
-
-            AWS.config.update({
-                "region": process.env.region,
-                "endpoint":process.env.DynamoDb_URI,
-                "accessKeyId": process.env.AwsAccessKeyId,
-                "secretAccessKey": process.env.AwsSecretAccessKey,
-            });
-        
-            // implementing dynamodb
-            var docClient = new AWS.DynamoDB.DocumentClient();
+            
 
             var params = {
                 TableName : "users"
@@ -360,7 +371,7 @@ exports.find = (req, res) => {
                 TableName : "files"
             }
 
-            await docClient.scan(params2, (err,data)=>{
+            await docClient.scan(params2, async (err,data)=>{
                 if (err) {
                     console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
                 } else {
@@ -370,6 +381,7 @@ exports.find = (req, res) => {
                     // console.log(data);
                     console.log(req.session.files);
                     console.log(req.session.users);
+                    await new Promise(resolve => setTimeout(resolve, 3000));
                     res.render('adminView', { userName: req.session.user, filesToDisplay:req.session.files , usersToDisplay:req.session.users });
                 }
             })
@@ -396,10 +408,28 @@ exports.find = (req, res) => {
             //     })
             // })
 
-
-
-
     }else{
+
+    
+        console.log(req.session.email);
+        
+        var params = {
+        TableName: "users",
+        Key:{
+        "email": req.session.email
+        
+                }   
+            };
+
+        docClient.get(params, function(err, data) {
+        if (err) {
+        console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+            } else {
+        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+            }
+        });
+
+
     // Checking if user in database exists with the given email 
     // findOne is the method for finding a particular field from the database in mongodb, we cannot use find here- doenst do validation
     // userdb.findOne({ email: inputEmail })
