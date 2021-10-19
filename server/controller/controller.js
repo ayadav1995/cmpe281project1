@@ -140,6 +140,7 @@ exports.upload = (req, res) => {
                     res.status(500).json({ error: true, Message: err });
                 } else {
                     await new Promise(resolve => setTimeout(resolve, 2000));
+                    
 
                     console.log("file upload successful");
                     var endDate = new Date();
@@ -161,7 +162,11 @@ exports.upload = (req, res) => {
                         // "accessKeyId": process.env.AwsAccessKeyId,
                         // "secretAccessKey": process.env.AwsSecretAccessKey
                     });
+                    console.log(data.Location);
+                    var str = data.Location;
+                    var cloudfrontUrl = process.env.cloudfrontUrl + str.substr(50);
                 
+                    // https://dropcloudbucket.s3.us-west-1.amazonaws.com/image-1634602573857
                     var params = {
                         TableName: "files",
                         Item: {
@@ -170,6 +175,7 @@ exports.upload = (req, res) => {
                         fileUrl: data.Location,
                         fileName: file.originalname,
                         fileDesc: file.originalname,
+                        cloudfrontUrl: cloudfrontUrl,
                         uploadTime: ((endDate - startDate) / 1000),
                         modifiedDate: ((endDate - startDate) / 1000)
                         }
