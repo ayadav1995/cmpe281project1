@@ -410,80 +410,72 @@ exports.find = (req, res) => {
 
     }else{
 
-    
         console.log(req.session.email);
         
+        var docClient = new AWS.DynamoDB.DocumentClient({
+            "endpoint":process.env.DynamoDb_URI
+        });
+    
+
         var params = {
         TableName: "users",
         Key:{
         "email": req.session.email
-        
-                }   
+                }   ,
+                "ProjectionExpression":" email, password",
+                // "ConsistentRead": true,
+                // "ReturnConsumedCapacity": "TOTAL"      
             };
 
-        docClient.get(params, function(err, data) {
+            console.log(req.session.email);
+
+        docClient.get(params, (err, data3) =>{
         if (err) {
         console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
             } else {
-        console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+        console.log("GetItem succeeded:", data3);
+        console.log(data3.Item);
+        console.log(data3.Item.password);
+
+        if(data3.Item.password==req.body.password){
+            console.log("User password Verified, USER CAN NOW LOGIN");
+
+            req.session.user=data3.Item.email;
+            req.session.password=data3.Item.password;
+
+            var params2 = {
+                TableName : "files"
+            }
+
+             docClient.scan(params2, async (err,data)=>{
+                if (err) {
+                    console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                    filesList=data.Items;
+                    
+
+                    var filesList =[] ;
+                    data.Items.forEach((item) => {
+                        if(item.email==req.session.email){
+                            filesList.push(item);
+                        }
+                    })
+
+                    req.session.files=filesList;
+                        console.log(filesList);
+
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        console.log("about to render dashboard with files: "+req.session.files);
+                        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+                }
+            })
+
+
+        }
+
             }
         });
-
-
-    // Checking if user in database exists with the given email 
-    // findOne is the method for finding a particular field from the database in mongodb, we cannot use find here- doenst do validation
-    // userdb.findOne({ email: inputEmail })
-    //     .then(data => {
-    //         //    console.log(inputEmail);
-    //         console.log("inside find method");
-    //         console.log('THIS IS DATA After CALLBACK ' + data);
-    //         if (!data) {
-    //             // res.status(404).send({ message: `cannot find the user with email:${inputEmail}` });
-    //             res.status(404);
-    //             alert(`cannot find the user with email:${inputEmail}`);
-    //         } else {
-    //             if (data.password == req.body.password) {
-    //                 // using session which we added as middlewear in server.js here . we use this session to pass username to ejs file dashboard.ejs
-    //                 console.log(req.session.user);
-    //                 req.session.user = data.name;
-    //                 req.session.email = data.email;
-    //                 console.log(req.session.user);
-
-    //                 var userEmail = data.email;
-    //                 console.log(userEmail);
-    //                 // using this userEmail object did not work in the below filesdb.find({email:req.body.email})
-
-    //                 // gettting list of the files uploaded by the user
-    //                 filesdb.find({email:req.body.email}).then(
-    //                     filesList=>{
-    //                         console.log("entered filesdb function");
-    //                         if(!filesList){
-    //                             console.log("No files found for the user");
-    //                         }else{
-    //                             req.session.files = filesList;
-    //                             console.log("trying to print files list after fetch from db "+filesList);
-    //                         }
-    //                     }
-    //                 ).then( render =>{
-    //                     console.log("about to render dashboard with files: "+req.session.files);
-    //                     res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
-    //                 }
-                       
-    //                 ).catch(err => {
-    //                     res.status(500).send({
-    //                         message: err.message || "Error encountered when fetching all files for the user"
-    //                     })
-    //                 })
-                        
-    //             } else {
-    //                 res.status(404).send({ message: `incorrect Password for user :${inputEmail}` });
-    //             }
-
-
-    //         }
-    //     })
-
-
     }
     
 }
