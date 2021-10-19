@@ -616,60 +616,121 @@ exports.update = (req, res) => {
 
 }
 
-//to find a single users 
-// exports.find = (req,res) =>{
-
-//     userdb.find({
-
-//     })
-
-// }
-
-
-//to delete a user
+// DynamoDb method to delete a file
 exports.delete = (req, res) => {
     console.log("inside delete function");
     console.log(req.query.url);
     console.log(req.session);
 
     var fileUrl = req.query.url;
-    // console.log(req.file);
-    // console.log(req.body.fileUrl);
-    // console.log(req.body.test);
-    // console.log(req.body.fileName);
-    // console.log(req.body.test2);
 
-    filesdb.remove({fileUrl:req.query.url}).then(
-        // waiting for 2 seconds before fetching new fileslist, didnt work here probably because we need to define a func inside then
-        // await new Promise(resolve => setTimeout(resolve, 5000));
+    AWS.config.update({
+        "region": process.env.region,
+        // "endpoint":process.env.DynamoDb_URI, -- adding this here will cause problems with s3 upload function coz it wil change bucket URL
+        "accessKeyId": process.env.AwsAccessKeyId,
+        "secretAccessKey": process.env.AwsSecretAccessKey,
+    });
 
-        filesdb.find({email:req.session.email}).then(
-            // have to make this function async in order to use await in the below func
-        async filesList=>{
-            // waits for 3 seconds before fetching new list of files for the user
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            console.log("entered filesdb function");
-            if(!filesList){
-                console.log("No files found for the user");
-            }else{
-                req.session.files = filesList;
-                console.log("trying to print files list after fetch from db "+filesList);
-            }
+    // implementing dynamodb
+    var docClient = new AWS.DynamoDB.DocumentClient({
+        "endpoint":process.env.DynamoDb_URI
+    });
+    
+    var params = {
+        TableName:"files",
+        Key:{
+            "fileUrl": fileUrl 
         }
-    ).then( render =>{
-        console.log("about to render dashboard with files: "+req.session.files);
-        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
-    }
+    };
+    
+    console.log("Attempting a conditional delete...");
+    docClient.delete(params, function(err, data) {
+        if (err) {
+            console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+        } else {
+            console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+            res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+        }
+    });
+
+
+    // filesdb.remove({fileUrl:req.query.url}).then(
+    //     // waiting for 2 seconds before fetching new fileslist, didnt work here probably because we need to define a func inside then
+    //     // await new Promise(resolve => setTimeout(resolve, 5000));
+
+    //     filesdb.find({email:req.session.email}).then(
+    //         // have to make this function async in order to use await in the below func
+    //     async filesList=>{
+    //         // waits for 3 seconds before fetching new list of files for the user
+    //         await new Promise(resolve => setTimeout(resolve, 3000));
+    //         console.log("entered filesdb function");
+    //         if(!filesList){
+    //             console.log("No files found for the user");
+    //         }else{
+    //             req.session.files = filesList;
+    //             console.log("trying to print files list after fetch from db "+filesList);
+    //         }
+    //     }
+    // ).then( render =>{
+    //     console.log("about to render dashboard with files: "+req.session.files);
+    //     res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+    // }
        
-    )).catch(err => {
-        res.status(500).send({
-            message: err.message || "Error encountered when fetching all files for the user"
-        })
-    })
+    // )).catch(err => {
+    //     res.status(500).send({
+    //         message: err.message || "Error encountered when fetching all files for the user"
+    //     })
+    // })
 
 
 
 }
+
+
+//MongoDB method to delete a user
+// exports.delete = (req, res) => {
+//     console.log("inside delete function");
+//     console.log(req.query.url);
+//     console.log(req.session);
+
+//     var fileUrl = req.query.url;
+//     // console.log(req.file);
+//     // console.log(req.body.fileUrl);
+//     // console.log(req.body.test);
+//     // console.log(req.body.fileName);
+//     // console.log(req.body.test2);
+
+//     filesdb.remove({fileUrl:req.query.url}).then(
+//         // waiting for 2 seconds before fetching new fileslist, didnt work here probably because we need to define a func inside then
+//         // await new Promise(resolve => setTimeout(resolve, 5000));
+
+//         filesdb.find({email:req.session.email}).then(
+//             // have to make this function async in order to use await in the below func
+//         async filesList=>{
+//             // waits for 3 seconds before fetching new list of files for the user
+//             await new Promise(resolve => setTimeout(resolve, 3000));
+//             console.log("entered filesdb function");
+//             if(!filesList){
+//                 console.log("No files found for the user");
+//             }else{
+//                 req.session.files = filesList;
+//                 console.log("trying to print files list after fetch from db "+filesList);
+//             }
+//         }
+//     ).then( render =>{
+//         console.log("about to render dashboard with files: "+req.session.files);
+//         res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+//     }
+       
+//     )).catch(err => {
+//         res.status(500).send({
+//             message: err.message || "Error encountered when fetching all files for the user"
+//         })
+//     })
+
+
+
+// }
 
 
 // module.exports=up;
