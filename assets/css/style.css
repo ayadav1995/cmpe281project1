@@ -19,7 +19,7 @@ a {
 }
 
 .container{
-    max-width: 750px;
+    max-width: max-content;
     margin: auto;
 }
 
