@@ -188,7 +188,39 @@ exports.upload = (req, res) => {
                             console.log("PutItem succeeded:", data.Location);
                             await new Promise(resolve => setTimeout(resolve, 2000));
                             console.log('File Uploaded');
-                        res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
+                        
+                            var params2 = {
+                                TableName : "files"
+                            }
+                
+                             docClient.scan(params2, async (err,data)=>{
+                                if (err) {
+                                    console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                                } else {
+                                    console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                                    filesList=data.Items;
+                                    
+                
+                                    var filesList =[] ;
+                                    data.Items.forEach((item) => {
+                                        if(item.email==req.session.email){
+                                            filesList.push(item);
+                                        }
+                                    })
+                
+                                    req.session.files=filesList;
+                                        console.log(filesList);
+                
+                                        await new Promise(resolve => setTimeout(resolve, 1000));
+                                        console.log("about to render dashboard with files: "+req.session.files);
+                                        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+                                }
+                            })
+                        
+                        
+                        
+                        
+                            // res.render('dashboard', { userName: req.session.user , filesToDisplay:req.session.files});
                         }
                      })
 
@@ -430,7 +462,7 @@ exports.logout = (req, res) => {
         var docClient = new AWS.DynamoDB.DocumentClient({
             "endpoint":process.env.DynamoDb_URI
         });
-    
+        
 
         var params = {
         TableName: "users",
@@ -664,7 +696,36 @@ exports.delete = (req, res) => {
             console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
         } else {
             console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
-            res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+
+            var params2 = {
+                TableName : "files"
+            }
+
+             docClient.scan(params2, async (err,data)=>{
+                if (err) {
+                    console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                } else {
+                    console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                    filesList=data.Items;
+                    
+
+                    var filesList =[] ;
+                    data.Items.forEach((item) => {
+                        if(item.email==req.session.email){
+                            filesList.push(item);
+                        }
+                    })
+
+                    req.session.files=filesList;
+                        console.log(filesList);
+
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        console.log("about to render dashboard with files: "+req.session.files);
+                        res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
+                }
+            })
+
+            // res.render('dashboard', { userName: req.session.user, filesToDisplay:req.session.files });
         }
     });
 

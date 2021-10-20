@@ -45,6 +45,8 @@ route.get('/api/users',controller.find);
 
 route.get('/logout',controller.logout);
 
+route.get('/delete',controller.delete);
+
 
 // why do we need this?
 module.exports=route;
