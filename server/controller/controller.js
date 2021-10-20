@@ -316,6 +316,15 @@ exports.find = (req, res) => {
     })
 }
 
+
+
+exports.logout = (req, res) => {
+
+    console.log("INSIDE LOGOUT FUNCTION");
+    res.render('index');
+}
+
+
 // DynamoDb login method
  exports.login = async (req, res) => {
 

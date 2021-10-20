@@ -18,6 +18,8 @@ a {
     font-family: 'PT Sans', sans-serif;
 }
 
+
+
 .container{
     max-width: max-content;
     margin: auto;
@@ -161,6 +163,11 @@ table{
 #login_form .form-group,
 #add_user .form-group{
     margin: .4em 0;
+}
+
+.logout-button{
+    float: right;
+    padding-bottom: 20px;
 }
 
 #login_form .form-group input[type="text"],

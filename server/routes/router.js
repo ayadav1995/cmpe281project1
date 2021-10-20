@@ -31,6 +31,7 @@ route.get('/dashboard',rederServices.dashboard);
 route.get('/index',rederServices.homeRoutes);
 
 
+
 //api methods dealing with database
 route.post('/upload',controller.upload);
 
@@ -42,7 +43,7 @@ route.post('/update', controller.update);
 
 route.get('/api/users',controller.find);
 
-route.get('/delete',controller.delete);
+route.get('/logout',controller.logout);
 
 
 // why do we need this?

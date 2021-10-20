@@ -14,6 +14,15 @@
            </div>
     <div class="container">
         
+        <div class="container logout-button">
+            <div class="box-nav d-flex justify-between " >
+                <!-- whaterver we give the name equal to href is the route ejs will set . And we can call the page using app.get('/add-user-page', (req,res)=>{ -->
+                <a href="/logout" class="border-shadow">
+                    <span class="text-gradient">logout</span>
+                </a>
+            </div> 
+      </div>
+        
         <form action="/update" method="POST" id=add_user enctype="multipart/form-data" >
             
         <!-- adding code for viewin users and their files -->
