@@ -96,7 +96,7 @@ exports.create = (req, res) => {
 // DynamoDb method for upload functionality
 exports.upload = (req, res) => {
 
-    multerObject(req, res, (err) => {
+    multerObject(req, res, async (err) => {
 
         console.log("INSIDE UPLOAD FUNCTION");
         // console.log(req);
@@ -135,7 +135,7 @@ exports.upload = (req, res) => {
                 ACL: "public-read"
             };
 
-            s3bucket.upload(params, async function (err, data) {
+           await s3bucket.upload(params, async function (err, data) {
                 if (err) {
                     res.status(500).json({ error: true, Message: err });
                 } else {
@@ -147,7 +147,9 @@ exports.upload = (req, res) => {
 
                     console.log("after s3 upload function");
 
-                    
+                    console.log(data.Location);
+                    var str = data.Location;
+                    var cloudfrontUrl = process.env.cloudfrontUrl + str.substr(50)
                     // AWS.config.update({
                     //     "region": process.env.region,
                     //     "endpoint":process.env.DynamoDb_URI,
@@ -162,9 +164,7 @@ exports.upload = (req, res) => {
                         // "accessKeyId": process.env.AwsAccessKeyId,
                         // "secretAccessKey": process.env.AwsSecretAccessKey
                     });
-                    console.log(data.Location);
-                    var str = data.Location;
-                    var cloudfrontUrl = process.env.cloudfrontUrl + str.substr(50);
+                   ;
                 
                     // https://dropcloudbucket.s3.us-west-1.amazonaws.com/image-1634602573857
                     var params = {
@@ -353,6 +353,10 @@ exports.find = (req, res) => {
 exports.logout = (req, res) => {
 
     console.log("INSIDE LOGOUT FUNCTION");
+    if(req.session.user){
+        req.session.destroy();
+    }
+
     res.render('index');
 }
 
@@ -388,7 +392,7 @@ exports.logout = (req, res) => {
     // console.log('THIS IS DATA BEFORE CALLBACK ' + userdb.findOne({ email: inputEmail }));
     
 
-    if(req.body.email=='admin@gmail.com'){
+    if(req.body.email=='admin@gmail.com' && req.body.password=='admin'){
             console.log("inside admin function");
 
             var userList='';
@@ -469,9 +473,10 @@ exports.logout = (req, res) => {
         Key:{
         "email": req.session.email
                 }   ,
-                "ProjectionExpression":" email, password",
+                "ProjectionExpression":" email,password",
                 // "ConsistentRead": true,
-                // "ReturnConsumedCapacity": "TOTAL"      
+                // "ReturnConsumedCapacity": "TOTAL"     
+                
             };
 
             console.log(req.session.email);
@@ -487,7 +492,7 @@ exports.logout = (req, res) => {
         if(data3.Item.password==req.body.password){
             console.log("User password Verified, USER CAN NOW LOGIN");
 
-            req.session.user=data3.Item.email;
+            req.session.user=data3.Item.name;
             req.session.password=data3.Item.password;
 
             var params2 = {
@@ -519,6 +524,8 @@ exports.logout = (req, res) => {
             })
 
 
+        }else{
+            res.render('index');
         }
 
             }
