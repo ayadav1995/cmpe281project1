@@ -10,7 +10,7 @@ const connectDB = async()=>{
 
         });
         // this `` operator can be used to specify variables like below inside a string using the dollar sign
-        console.log(`MongoDB connected : ${con.connection.host}`);
+        // console.log(`MongoDB connected : ${con.connection.host}`);
 
     } catch (error) {
         console.log(error);

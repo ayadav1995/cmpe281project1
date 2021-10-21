@@ -353,9 +353,9 @@ exports.find = (req, res) => {
 exports.logout = (req, res) => {
 
     console.log("INSIDE LOGOUT FUNCTION");
-    if(req.session.user){
-        req.session.destroy();
-    }
+    // if(req.session.user){
+    //     req.session.destroy();
+    // }
 
     res.render('index');
 }
@@ -473,7 +473,7 @@ exports.logout = (req, res) => {
         Key:{
         "email": req.session.email
                 }   ,
-                "ProjectionExpression":" email,password",
+                "ProjectionExpression":"email,password",
                 // "ConsistentRead": true,
                 // "ReturnConsumedCapacity": "TOTAL"     
                 
@@ -492,7 +492,7 @@ exports.logout = (req, res) => {
         if(data3.Item.password==req.body.password){
             console.log("User password Verified, USER CAN NOW LOGIN");
 
-            req.session.user=data3.Item.name;
+            req.session.user=data3.Item.email;
             req.session.password=data3.Item.password;
 
             var params2 = {
